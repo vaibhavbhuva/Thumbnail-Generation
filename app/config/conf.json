@@ -1,0 +1,9 @@
+{
+   "project_id_ai" : "",
+   "project_id_storage" : "",
+   "location" : "us-central1",
+   "image_gen_model" : "imagen-3.0-generate-001",
+   "llm_model" : "gpt-3.5-turbo",
+   "image_aspect_ratio" : "3:4",
+   "thumb_storage_bucket" : "igot"
+}
