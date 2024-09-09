@@ -39,10 +39,7 @@ Before you begin, ensure you have the following installed on your system:
     poetry install
     ```
 
-4. Create a `.env` file in the root directory and set your OpenAI API key:
-    ```
-    OPENAI_API_KEY=your_openai_api_key_here
-    ```  
+4. Copy `.env.example` file, paste it into the same location, and rename to `.env` and update the values in that file.
 
 ## Usage
 

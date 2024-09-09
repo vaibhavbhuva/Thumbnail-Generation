@@ -10,6 +10,7 @@ from langchain_core.output_parsers import StrOutputParser
 
 # Load environment variables from .env file
 load_dotenv()
+KB_API_HOST = os.environ["KB_API_HOST"]
 
 llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini")
 # Define prompt
@@ -56,7 +57,6 @@ Example 4:  A high-tech exhibition scene showcasing a 3D hologram of the Google 
 Example 5: Travel guide book cover for "Hidden Gems of Europe", with the title in crisp text, overlaid on images of quaint European streets and landmarks 
 
 Generated Prompt should include following instructions: 
-- Image should be in a landscape orientation.
 - Please ensure that the image does not include any text or human imagery.
 - Generate image without map of india.
 
@@ -64,27 +64,16 @@ GENERATE PROMPT"""
 
 
 def get_course_details(course_id: str) -> Dict[str, any]:
-    """Fetches the details of a course.
 
-    Args:
-        course_id (str): The ID of the course to fetch details for.
-
-    Returns:
-        Dict[str, any]: A dictionary containing the course details if successful, 
-            otherwise raises an exception.
-
-    Raises:
-        requests.exceptions.RequestException: If there's an error during the API call.
-    """
-
-    url = f"https://portal.igotkarmayogi.gov.in/api/course/v1/hierarchy/{course_id}?hierarchyType=detail"
+    url = f"{KB_API_HOST}/api/course/v1/hierarchy/{course_id}?hierarchyType=detail"
     response = requests.get(url, headers={})
+    
     try:
         response.raise_for_status()
         data = response.json()
         return data
     except requests.exceptions.RequestException as e:
-        raise Exception(f"Error while fetching the course details for course ID: {course_id}") from e
+        raise Exception("An error occurred while retrieving course details.")
 
 def format_course_toc(data):
   """
@@ -110,11 +99,9 @@ def format_course_toc(data):
   return toc
 
 def generate_course_summary(course_id: str):
-    # Instantiate chain
     course_details = get_course_details(course_id)
     formatted_toc = format_course_toc(course_details["result"]["content"])
     chain = prompt | llm | StrOutputParser()
-    # Invoke chain
     result = chain.invoke({
         "title": course_details["result"]["content"]["name"],
         "description": course_details["result"]["content"]["description"], 
@@ -143,7 +130,6 @@ def generate_image(image_prompt: str):
     {image_prompt}
 
     Guidelines:
-    - Image should be in a landscape orientation.
     - Please ensure that the image does not include any text or human imagery.
     - Generate image without map of india.
     """)
