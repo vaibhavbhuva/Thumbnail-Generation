@@ -33,6 +33,6 @@ def generate_course_image_variations(course_id: str):
         return ImageVariationResponse(images=image_urls)
     except Exception as e:
         logger.exception("Error while generating the image variations")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str("Something went wrong, please try again later..."))
 
     

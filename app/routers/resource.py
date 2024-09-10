@@ -15,5 +15,5 @@ def generate_image(resource_id: str):
         }
     except Exception as e:
         logger.exception("Error while generating image for resource:")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str("Something went wrong, please try again later..."))
     
