@@ -41,6 +41,26 @@ Before you begin, ensure you have the following installed on your system:
 
 4. Copy `.env.example` file, paste it into the same location, and rename to `.env` and update the values in that file.
 
+    | **Environment Variable**          | **Description** |
+    |-----------------------------------|-------------------------------------------------------------------------------------------------------|
+    | `SERVICE_ENVIRONMENT`       | Specifies the environment in which the service is running. Can be "DEV", "STAGING", or "PROD".         |
+    | `LOG_LEVEL`           | Defines the level of logging. Common values include "DEBUG", "INFO", "WARN", "ERROR".                 |
+    | `KB_API_HOST=""` | Host URL for the KarmaYogi portal's API.                                                              |
+    | **OPENAI**                        | **OpenAI API Configuration**                                                                           |
+    | `OPENAI_API_KEY`               | API key used to authenticate with OpenAI services.                                                     |
+    | **GCP Storage**                   | **Google Cloud Platform (GCP) Storage Configuration**                                                  |
+    | `GCP_STORAGE_CREDENTIALS`      | Path to a JSON file containing GCP service account credentials for accessing Google Cloud Storage                               |
+    | `GCP_BUCKET_NAME`              | Name of the GCP bucket where data is stored.                                                           |
+    | `STORAGE_THUMBNAIL_FOLDER`     | Subfolder within the GCP bucket to store thumbnails of generated images. (e.g., `"thumbnail_images`")                                      |
+    | `STORAGE_PROXY_PATH`           | Proxy path for accessing stored files in the GCP bucket through a proxy url. (e.g., `"thumbnails/generate"`)                                          |
+    | **GCP Vertex AI**                 | **Google Cloud Platform (GCP) Vertex AI Configuration**                                                |
+    | `GCP_GEMINI_CREDENTIALS`       | Path to the GCP Gemini credentials JSON file used for authentication with Vertex AI.                   |
+    | `GCP_GEMINI_PROJECT_ID`        | ID of the GCP project where Vertex AI models are deployed.                                |
+    | `GEMINI_MODEL_PRO` | Name of the Gemini text-to-image model to be used. (e.g., `"gemini-1.5-flash-001`")                         |
+    | `VISION_MODEL` | Identifier for the vision model version to be used for image generation in Vertex AI. (e.g., `"imagen-3.0-fast-generate-001"`)              |
+    | `NUMBER_OF_IMAGES`            | Defines the number of images to generate during an image processing task. (e.g., `"2"`)                             |
+
+
 ## Usage
 
 • Run the FastAPI application:

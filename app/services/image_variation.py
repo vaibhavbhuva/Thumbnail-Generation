@@ -1,7 +1,7 @@
 import os
 import math
-import uuid
 from pathlib import Path
+import urllib.parse
 import requests
 import vertexai
 import matplotlib.pyplot as plt
@@ -10,34 +10,35 @@ from dotenv import load_dotenv
 from ..logger import logger
 from ..utils import get_extension_from_mimetype, format_storage_url, MIME_TO_EXTENSION
 
-from vertexai.generative_models import GenerativeModel, Part, Image
+from vertexai.generative_models import GenerativeModel, Part, Image , SafetySetting, GenerationConfig
 from vertexai.preview.vision_models import ImageGenerationResponse, ImageGenerationModel
 from ..libs.storage import GCPStorage
+import app.config as config
 
 load_dotenv()
 
 KB_API_HOST = os.environ["KB_API_HOST"]
+
+# GCP Storage
 storage = GCPStorage()
+STORAGE_THUMBNAIL_FOLDER=os.environ["STORAGE_THUMBNAIL_FOLDER"]
+STORAGE_PROXY_PATH=os.environ["STORAGE_PROXY_PATH"]
+
+#GCP GEMINI VERTEX AI
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ["GCP_GEMINI_CREDENTIALS"]
 vertexai.init(project=os.environ["GCP_GEMINI_PROJECT_ID"])
-STORAGE_THUMBNAIL_FOLDER="thumbnail_images"
-STORAGE_PROXY_PATH="/thumbnails/generated/"
 
-# Default parameters for vertex AI - gemini
-DEFAULT_PROMPT="You are an expert in writing prompts for image generation model and have immense knowledge of photography, based on given image and settings, generate a 150 words prompt adding supporting props to the image subject, but do NOT add too much information, keep it on the simpler side. Add 'a photo of' prefix to a prompt"
-# DEFAULT_PROMPT="What is in this image?" #
-NEGATIVE_PROMPT = """1. Avoid maps or geographical locations that promote stereotypes or favor certain regions
-2. Avoid content that promotes or disparages any particular religion or religious belief.
-3. Avoid content that reinforces gender stereotypes or biases.
-"""
-PERSON_GENERATION="allow_adult"
-SAFETY_FILTER_LEVEL="block_some"
-DEFAULT_ASPECT_RATIO = "4:3"
 GEMINI_MODEL_PRO = os.environ["GEMINI_MODEL_PRO"]
 VISION_MODEL = os.environ["VISION_MODEL"]
-NUMBER_OF_IMAGES = 2
-GUIDANCE_SCALE = 90
-SEED = 915
+NUMBER_OF_IMAGES = os.environ["NUMBER_OF_IMAGES"]
+DEFAULT_PROMPT=config.DEFAULT_PROMPT
+# DEFAULT_PROMPT="What is in this image?" #
+NEGATIVE_PROMPT = config.NEGATIVE_PROMPT
+PERSON_GENERATION=config.PERSON_GENERATION
+SAFETY_FILTER_LEVEL=config.SAFETY_FILTER_LEVEL
+DEFAULT_ASPECT_RATIO = config.DEFAULT_ASPECT_RATIO
+GUIDANCE_SCALE = config.GUIDANCE_SCALE
+SEED = config.SEED
 
 
 def fetch_content_details(content_id: str) -> dict:
@@ -126,7 +127,36 @@ def generate_content(image_data: bytes) -> str:
     gemini = GenerativeModel(GEMINI_MODEL_PRO)
     text_part = Part.from_text(DEFAULT_PROMPT)
     image_part = Part.from_image(Image.from_bytes(image_data))
-    response = gemini.generate_content([image_part, text_part])
+    generation_config = GenerationConfig(
+        # temperature=1,
+        # top_p=0.95,
+        # top_k=40,
+        # candidate_count=1,
+        max_output_tokens=512
+    )
+    # safety_settings = [
+    #     SafetySetting(
+    #         category=SafetySetting.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    #         threshold=SafetySetting.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+    #     ),
+    #     SafetySetting(
+    #         category=SafetySetting.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    #         threshold=SafetySetting.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+    #     ),
+    #     SafetySetting(
+    #         category=SafetySetting.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    #         threshold=SafetySetting.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+    #     ),
+    #     SafetySetting(
+    #         category=SafetySetting.HarmCategory.HARM_CATEGORY_HARASSMENT,
+    #         threshold=SafetySetting.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+    #     ),
+    # ]
+    response = gemini.generate_content(
+        contents = [image_part, text_part], 
+        generation_config=generation_config,
+        # safety_settings=safety_settings
+    )
     logger.info(f"Generated content :: {response.text}")
     return response.text
 
@@ -191,13 +221,13 @@ def generate_image_variations(content_id: str) -> List[str]:
     images = generate_image(image_prompt)
     original_file_name = Path(image_url).stem
     image_urls = []
-    for image in images:       
+    for index, image in enumerate(images):       
         extension = get_extension_from_mimetype(image._mime_type)
-        filename = f"{original_file_name}.{extension}"
+        filename = f"{original_file_name}_{index}.{extension}"
         filepath = os.path.join(STORAGE_THUMBNAIL_FOLDER, content_id, filename)
         logger.info(f"Filename :: {filepath}")
         storage.write_file(filepath, image._image_bytes, image._mime_type)
         # image_urls.append(storage.public_url(filepath))
-        public_url = KB_API_HOST + STORAGE_PROXY_PATH + content_id + "/" + filename
+        public_url = urllib.parse.urljoin(KB_API_HOST, os.path.join(STORAGE_PROXY_PATH, content_id, filename))
         image_urls.append(public_url)
     return image_urls
