@@ -21,7 +21,7 @@ storage = GCPStorage()
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.environ["GCP_GEMINI_CREDENTIALS"]
 vertexai.init(project=os.environ["GCP_GEMINI_PROJECT_ID"])
 STORAGE_THUMBNAIL_FOLDER="thumbnail_images"
-STORAGE_PROXY_PATH="/thumbnails/generate/"
+STORAGE_PROXY_PATH="/thumbnails/generated/"
 
 # Default parameters for vertex AI - gemini
 DEFAULT_PROMPT="You are an expert in writing prompts for image generation model and have immense knowledge of photography, based on given image and settings, generate a 150 words prompt adding supporting props to the image subject, but do NOT add too much information, keep it on the simpler side. Add 'a photo of' prefix to a prompt"
