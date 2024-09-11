@@ -13,7 +13,7 @@ from ..utils import get_extension_from_mimetype, format_storage_url, MIME_TO_EXT
 from vertexai.generative_models import GenerativeModel, Part, Image , SafetySetting, GenerationConfig
 from vertexai.preview.vision_models import ImageGenerationResponse, ImageGenerationModel
 from ..libs.storage import GCPStorage
-import app.config as config
+from .. import config
 
 load_dotenv()
 
