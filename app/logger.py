@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 os.makedirs("logs", exist_ok=True)
-logging.config.fileConfig('app/logging.conf')
+
+logging.config.fileConfig(os.path.join(os.path.dirname(__file__), "logging.conf"))
 
 
 # Configure the logger
