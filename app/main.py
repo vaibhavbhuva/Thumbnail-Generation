@@ -7,6 +7,7 @@ from .routers import router as v1_router
 load_dotenv()
 
 app = FastAPI(
+    root_path= "/imagegen",
     title= "KB Image Generation APIs"
 )
 app.add_middleware(
