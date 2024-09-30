@@ -1,16 +1,25 @@
+from PIL import Image
+import base64
+import io
 import os
 from dotenv import load_dotenv
 from typing import Dict
+import urllib.parse
 import requests
 from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain_community.utilities.dalle_image_generator import DallEAPIWrapper
 from langchain_core.output_parsers import StrOutputParser
+import openai
+from ..utils import get_extension_from_mimetype
 
 # Load environment variables from .env file
 load_dotenv()
 KB_API_HOST = os.environ["KB_API_HOST"]
+
+from ..libs.storage import GCPStorage
+storage = GCPStorage()
+STORAGE_THUMBNAIL_FOLDER=os.environ["STORAGE_THUMBNAIL_FOLDER"]
+STORAGE_PROXY_PATH=os.environ["STORAGE_PROXY_PATH"]
 
 llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini")
 # Define prompt
@@ -107,7 +116,7 @@ def generate_course_summary(course_id: str):
         "description": course_details["result"]["content"]["description"], 
         "toc": formatted_toc
       })
-    return result
+    return course_details["result"]["content"], result
 
 def generate_image_prompt(summary: str):
     prompt = PromptTemplate.from_template(prompt_template)
@@ -125,12 +134,49 @@ def generate_image_prompt(summary: str):
 def generate_image(image_prompt: str):
     ############################
     # Generate a thumbnail image
-    image_url = DallEAPIWrapper(model="dall-e-3", size="1792x1024").run(f"""
+    prompt = f"""
     Do not print any text on image, just use it AS-IS:
     {image_prompt}
 
     Guidelines:
     - Please ensure that the image does not include any text or human imagery.
     - Generate image without map of india.
-    """)
-    return image_url
+    """
+    response = openai.images.generate(
+        prompt=prompt,
+        model="dall-e-3",
+        size="1024x1024",
+        quality="standard",
+        n=1,
+        response_format="b64_json"
+    )
+    return response.data[0].b64_json
+
+# Compress and convert image to JPEG
+def compress_image(image_data):
+    # Decode the base64 image data
+    image_bytes = base64.b64decode(image_data)
+    
+    # Load the image into a PIL Image object
+    image = Image.open(io.BytesIO(image_bytes))
+
+    # Convert to JPEG and compress the image
+    compressed_buffer = io.BytesIO()
+    image.save(compressed_buffer, format="JPEG", quality=80)  # Adjust quality if needed
+    compressed_image_data = compressed_buffer.getvalue()
+    return compressed_image_data
+
+def generate_public_url(content, image_data, mime_type = None):
+
+    if mime_type is None:
+       mime_type = "image/jpeg"
+
+    compressed_image_data = compress_image(image_data)
+    
+    extension = get_extension_from_mimetype(mime_type)
+    filename = f"{content["name"]}.{extension}"
+    filepath = os.path.join(STORAGE_THUMBNAIL_FOLDER, content["identifier"], filename)
+    storage.write_file(filepath, compressed_image_data, mime_type)
+    # image_urls.append(storage.public_url(filepath))
+    public_url = urllib.parse.urljoin(KB_API_HOST, os.path.join(STORAGE_PROXY_PATH, content["identifier"], filename))
+    return public_url
