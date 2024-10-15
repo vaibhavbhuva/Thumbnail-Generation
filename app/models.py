@@ -8,7 +8,7 @@ class ImageResponse(BaseModel):
 
 class LogoDetection(BaseModel):
     found: bool
-    warning: str
+    warning: str | None
 class ImageVariationResponse(BaseModel):
     images: List[str]
     logo: LogoDetection
