@@ -1,5 +1,6 @@
 import os
 import math
+import json
 from pathlib import Path
 import urllib.parse
 import requests
@@ -206,7 +207,7 @@ def detect_logos(image_data: bytes) -> str:
         # stream=True,
     )
     logger.info(f"Logo Detection :: {response.text}")
-    return response.text
+    return json.loads(response.text)
 
 
 def generate_content(image_data: bytes) -> str:
