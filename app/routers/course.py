@@ -32,9 +32,9 @@ def generate_course_image_variations(course_id: str):
     try:
         start_time = time.time()
         logger.info(f"Course ID : {course_id}")
-        image_urls = generate_image_variations(course_id)
+        logo_detection, image_urls = generate_image_variations(course_id)
         print("Time took to process the request and return response is {} sec".format(time.time() - start_time))
-        return ImageVariationResponse(images=image_urls)
+        return ImageVariationResponse(images=image_urls, logo=logo_detection)
     except Exception as e:
         logger.exception("Error while generating the image variations")
         raise HTTPException(status_code=500, detail=str("Something went wrong, please try again later..."))

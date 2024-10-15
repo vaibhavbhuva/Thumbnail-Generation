@@ -6,5 +6,9 @@ class ImageResponse(BaseModel):
     image_prompt: str
     image_url: str
 
+class LogoDetection(BaseModel):
+    found: bool
+    warning: str
 class ImageVariationResponse(BaseModel):
     images: List[str]
+    logo: LogoDetection
