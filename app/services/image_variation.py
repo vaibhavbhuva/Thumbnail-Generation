@@ -5,7 +5,7 @@ import urllib.parse
 import requests
 import vertexai
 import matplotlib.pyplot as plt
-from typing import List
+from typing import Any, Dict, List, Tuple
 from dotenv import load_dotenv
 from ..logger import logger
 from ..utils import get_extension_from_mimetype, format_storage_url, MIME_TO_EXTENSION
@@ -122,6 +122,92 @@ def download_content_thumbnail(content_id: str) -> tuple[str, bytes]:
     thumbnail_data = download_thumbnail(thumbnail_url)
     return thumbnail_url, thumbnail_data
 
+def detect_logos(image_data: bytes) -> str:
+    system_instruction = """You are a image data analyst with expertise in commercial logos. Please do not hallucinate. You can just output nothing if there are no positive findings."""
+    model = GenerativeModel(
+        "gemini-1.5-flash-002",
+        system_instruction=[system_instruction]
+    )
+    text_part = Part.from_text("""Identify and detect logos within an image, providing information about the logo\'s name, position, and confidence score.
+
+        # Steps:
+        1. **Image Analysis**: Load and preprocess the input image for logo detection, ensuring appropriate scaling and color adjustment.
+        2. **Logo Detection**: Use a logo detection model or algorithm to identify potential logos within the image.
+        3. **Localization and Classification**: Determine the position (bounding box) of each detected logo, classify it to identify its name, and calculate the detection confidence score.
+        4. **Compile Results**: Gather the results, including logo name, position, and confidence score.
+
+
+        # Notes
+        - Ensure that the provided confidence score reflects the accuracy of the detection result.
+        - Consider using pre-trained neural networks for more accurate logo detection and recognition.
+        - Handle images of varying resolutions and formats for robust detection capabilities.
+
+    """)
+    image_part = Part.from_image(Image.from_bytes(image_data))
+    generation_config = {
+        "max_output_tokens": 8192,
+        "temperature": 1,
+        "top_p": 0.95,
+        "response_mime_type": "application/json",
+        "response_schema": {
+            "type_":"ARRAY",
+            "items": {
+                "type_":"OBJECT",
+                "properties": {
+                    "logo_name": {
+                        "type_":"STRING"
+                    },
+                    "position":{
+                        "type_":"OBJECT",
+                        "properties":{
+                        "x":{
+                            "type_":"NUMBER"
+                        },
+                        "y":{
+                            "type_":"NUMBER"
+                        },
+                        "width":{
+                            "type_":"NUMBER"
+                        },
+                        "height":{
+                            "type_":"NUMBER"
+                        }
+                        }
+                    },
+                    "confidence_score":{
+                        "type_":"NUMBER"
+                    }
+                }
+            }
+        }
+    }
+    safety_settings = [
+        SafetySetting(
+            category=SafetySetting.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+            threshold=SafetySetting.HarmBlockThreshold.BLOCK_NONE
+        ),
+        SafetySetting(
+            category=SafetySetting.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+            threshold=SafetySetting.HarmBlockThreshold.BLOCK_NONE
+        ),
+        SafetySetting(
+            category=SafetySetting.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+            threshold=SafetySetting.HarmBlockThreshold.BLOCK_NONE
+        ),
+        SafetySetting(
+            category=SafetySetting.HarmCategory.HARM_CATEGORY_HARASSMENT,
+            threshold=SafetySetting.HarmBlockThreshold.BLOCK_NONE
+        ),
+    ]
+    response = model.generate_content(
+        [text_part, image_part],
+        generation_config=generation_config,
+        # safety_settings=safety_settings,
+        # stream=True,
+    )
+    logger.info(f"Logo Detection :: {response.text}")
+    return response.text
+
 
 def generate_content(image_data: bytes) -> str:
     gemini = GenerativeModel(GEMINI_MODEL_PRO)
@@ -215,8 +301,16 @@ def generate_image(image_prompt: str) -> ImageGenerationResponse:
     )
     return images
 
-def generate_image_variations(content_id: str) -> List[str]:
+def generate_image_variations(content_id: str) -> Tuple[Dict[str, Any], List[str]]:
     image_url, image_data = download_content_thumbnail(content_id)
+    logo_detection = {
+        "found": False,
+        "warning" : None
+    }
+    logo_results = detect_logos(image_data)
+    if logo_results:
+        logo_detection["found"] = True
+        logo_detection["warning"] = "This image contains a logo. AI may not accurately generate changes to logos. This feature is currently in beta testing."
     image_prompt = generate_content(image_data)
     images = generate_image(image_prompt)
     original_file_name = Path(image_url).stem
@@ -230,4 +324,4 @@ def generate_image_variations(content_id: str) -> List[str]:
         # image_urls.append(storage.public_url(filepath))
         public_url = urllib.parse.urljoin(KB_API_HOST, os.path.join(STORAGE_PROXY_PATH, content_id, filename))
         image_urls.append(public_url)
-    return image_urls
+    return logo_detection, image_urls
