@@ -55,7 +55,7 @@ def fetch_content_details(content_id: str) -> dict:
         Exception: If there's an error fetching the content details.
     """
 
-    url = f"{KB_API_HOST}/api/content/v1/read/{content_id}"
+    url = f"{KB_API_HOST}/api/content/v1/read/{content_id}?mode=edit"
     response = requests.get(url)
     response.raise_for_status()
     data = response.json()
@@ -201,7 +201,7 @@ def detect_logos(image_data: bytes) -> str:
         ),
     ]
     response = model.generate_content(
-        [text_part, image_part],
+        [image_part, text_part],
         generation_config=generation_config,
         # safety_settings=safety_settings,
         # stream=True,
