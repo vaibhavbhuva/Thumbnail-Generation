@@ -46,8 +46,6 @@ Before you begin, ensure you have the following installed on your system:
     | `SERVICE_ENVIRONMENT`       | Specifies the environment in which the service is running. Can be "DEV", "STAGING", or "PROD".         |
     | `LOG_LEVEL`           | Defines the level of logging. Common values include "DEBUG", "INFO", "WARN", "ERROR".                 |
     | `KB_API_HOST=""` | Host URL for the KarmaYogi portal's API.                                                              |
-    | **OPENAI**                        | **OpenAI API Configuration**                                                                           |
-    | `OPENAI_API_KEY`               | API key used to authenticate with OpenAI services.                                                     |
     | **GCP Storage**                   | **Google Cloud Platform (GCP) Storage Configuration**                                                  |
     | `GCP_STORAGE_CREDENTIALS`      | Path to a JSON file containing GCP service account credentials for accessing Google Cloud Storage                               |
     | `GCP_BUCKET_NAME`              | Name of the GCP bucket where data is stored.                                                           |
