@@ -8,13 +8,13 @@ import vertexai
 import matplotlib.pyplot as plt
 from typing import Any, Dict, List, Tuple
 from dotenv import load_dotenv
-from ..logger import logger
-from ..utils import get_extension_from_mimetype, format_storage_url, MIME_TO_EXTENSION
+from ...logger import logger
+from ...utils import get_extension_from_mimetype, format_storage_url, MIME_TO_EXTENSION
 
 from vertexai.generative_models import GenerativeModel, Part, Image , SafetySetting, GenerationConfig
 from vertexai.preview.vision_models import ImageGenerationResponse, ImageGenerationModel
-from ..libs.storage import GCPStorage
-from .. import config
+from ...libs.storage import GCPStorage
+from ... import config
 
 load_dotenv()
 
@@ -126,7 +126,7 @@ def download_content_thumbnail(content_id: str) -> tuple[str, bytes]:
 def detect_logos(image_data: bytes) -> str:
     system_instruction = """You are a image data analyst with expertise in commercial logos. Please do not hallucinate. You can just output nothing if there are no positive findings."""
     model = GenerativeModel(
-        "gemini-1.5-flash-002",
+        GEMINI_MODEL_PRO,
         system_instruction=[system_instruction]
     )
     text_part = Part.from_text("""Identify and detect logos within an image, providing information about the logo\'s name, position, and confidence score.

@@ -1,7 +1,9 @@
 import logging
 from fastapi import APIRouter, HTTPException
-from ..logger import logger
+from ...logger import logger
+
 logger = logging.getLogger("kb-image-api")
+
 router = APIRouter(
     prefix="/resource",
     tags=["Resource"]

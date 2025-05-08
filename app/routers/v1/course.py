@@ -1,9 +1,9 @@
 import time
 from fastapi import APIRouter, HTTPException
-from ..logger import logger
-from ..models import ImageResponse, ImageVariationResponse
+from ...logger import logger
+from ...models import ImageResponse, ImageVariationResponse
 # from ..services.course import generate_course_summary, generate_image_prompt, generate_image, generate_public_url
-from ..services.image_variation import generate_image_variations
+from ...services.v1.image_variation import generate_image_variations
 
 router = APIRouter(
     # prefix="/course",

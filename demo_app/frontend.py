@@ -1,5 +1,7 @@
 import requests
 import streamlit as st
+import os
+from urllib.parse import urlsplit
 
 def fetch_image_variations(course_id):
     """Fetches image variations for a given course ID from the API.
@@ -24,6 +26,12 @@ def fetch_image_variations(course_id):
     except requests.exceptions.RequestException as e:
         raise e
 
+def get_filename_from_url(url=None):
+    if url is None:
+        return None
+    urlpath = urlsplit(url).path
+    return os.path.basename(urlpath)
+
 def display_images(images):
     """Displays a list of image URLs in a 4-column grid.
 
@@ -33,7 +41,8 @@ def display_images(images):
 
     cols = st.columns(4)
     for i, image_url in enumerate(images):
-        cols[i].image(image_url)
+        print(image_url)
+        cols[i].image(image_url, caption=  get_filename_from_url(image_url))
 
 def main():
     """Main function for the Streamlit application."""

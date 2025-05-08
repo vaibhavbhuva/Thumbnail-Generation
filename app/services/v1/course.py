@@ -10,14 +10,15 @@ from langchain_openai import ChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate, PromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 import openai
-from ..utils import get_extension_from_mimetype
+from ...utils import get_extension_from_mimetype
 
 # Load environment variables from .env file
 load_dotenv()
 KB_API_HOST = os.environ["KB_API_HOST"]
 
-from ..libs.storage import GCPStorage
+from ...libs.storage import GCPStorage
 storage = GCPStorage()
+
 STORAGE_THUMBNAIL_FOLDER=os.environ["STORAGE_THUMBNAIL_FOLDER"]
 STORAGE_PROXY_PATH=os.environ["STORAGE_PROXY_PATH"]
 
