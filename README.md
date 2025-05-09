@@ -54,7 +54,7 @@ Before you begin, ensure you have the following installed on your system:
     | **GCP Vertex AI**                 | **Google Cloud Platform (GCP) Vertex AI Configuration**                                                |
     | `GCP_GEMINI_CREDENTIALS`       | Path to the GCP Gemini credentials JSON file used for authentication with Vertex AI.                   |
     | `GCP_GEMINI_PROJECT_ID`        | ID of the GCP project where Vertex AI models are deployed.                                |
-    | `GEMINI_MODEL_PRO` | Name of the Gemini text-to-image model to be used. (e.g., `"gemini-2.0-flash`")                         |
+    | `GEMINI_MODEL_PRO` | Name of the Gemini text-to-image model to be used. (e.g., `"gemini-2.0-flash-lite`")                         |
     | `VISION_MODEL` | Identifier for the vision model version to be used for image generation in Vertex AI. (e.g., `"imagen-3.0-fast-generate-001"`)              |
     | `NUMBER_OF_IMAGES`            | Defines the number of images to generate during an image processing task. (e.g., `"2"`)                             |
 
