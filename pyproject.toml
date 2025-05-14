@@ -22,3 +22,24 @@ matplotlib = "^3.9.2"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.pytest.ini_options]
+addopts = "--cov=app --cov-report=html:coverage"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+omit = [
+    "*/tests/*",
+    "*/__init__.py",
+    "*/config.py",
+    "*/logger.*",
+    "*/models.py"
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "raise NotImplementedError"
+]
