@@ -182,24 +182,24 @@ def detect_logos(image_data: bytes) -> str:
             }
         }
     }
-    safety_settings = [
-        SafetySetting(
-            category=SafetySetting.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-            threshold=SafetySetting.HarmBlockThreshold.BLOCK_NONE
-        ),
-        SafetySetting(
-            category=SafetySetting.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-            threshold=SafetySetting.HarmBlockThreshold.BLOCK_NONE
-        ),
-        SafetySetting(
-            category=SafetySetting.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-            threshold=SafetySetting.HarmBlockThreshold.BLOCK_NONE
-        ),
-        SafetySetting(
-            category=SafetySetting.HarmCategory.HARM_CATEGORY_HARASSMENT,
-            threshold=SafetySetting.HarmBlockThreshold.BLOCK_NONE
-        ),
-    ]
+    # safety_settings = [
+    #     SafetySetting(
+    #         category=SafetySetting.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+    #         threshold=SafetySetting.HarmBlockThreshold.BLOCK_NONE
+    #     ),
+    #     SafetySetting(
+    #         category=SafetySetting.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+    #         threshold=SafetySetting.HarmBlockThreshold.BLOCK_NONE
+    #     ),
+    #     SafetySetting(
+    #         category=SafetySetting.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+    #         threshold=SafetySetting.HarmBlockThreshold.BLOCK_NONE
+    #     ),
+    #     SafetySetting(
+    #         category=SafetySetting.HarmCategory.HARM_CATEGORY_HARASSMENT,
+    #         threshold=SafetySetting.HarmBlockThreshold.BLOCK_NONE
+    #     ),
+    # ]
     response = model.generate_content(
         [image_part, text_part],
         generation_config=generation_config,
@@ -247,49 +247,7 @@ def generate_content(image_data: bytes) -> str:
     logger.info(f"Generated content :: {response.text}")
     return response.text
 
-
-def display_images_in_grid(images):
-    """Displays the provided images in a grid format. 4 images per row.
-
-    Args:
-        images: A list of PIL Image objects representing the images to display.
-    """
-
-    # Determine the number of rows and columns for the grid layout.
-    nrows = math.ceil(len(images) / 4)  # Display at most 4 images per row
-    # Adjust columns based on the number of images
-    ncols = min(len(images) + 1, 4)
-
-    # Create a figure and axes for the grid layout.
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(12, 6))
-
-    for i, ax in enumerate(axes.flat):
-        if i < len(images):
-            # Display the image in the current axis.
-            ax.imshow(images[i]._pil_image)
-
-            # Adjust the axis aspect ratio to maintain image proportions.
-            ax.set_aspect("equal")
-
-            # Disable axis ticks for a cleaner appearance.
-            ax.set_xticks([])
-            ax.set_yticks([])
-        else:
-            # Hide empty subplots to avoid displaying blank axes.
-            ax.axis("off")
-
-    # Adjust the layout to minimize whitespace between subplots.
-    plt.tight_layout()
-
-    # Display the figure with the arranged images.
-    plt.show()
-
-
 def generate_image(image_prompt: str) -> ImageGenerationResponse:
-
-    # if not image_prompt:
-    #     raise TypeError("image_prompt must not be empty")
-
     image_model = ImageGenerationModel.from_pretrained(VISION_MODEL)
     image_model.upscale_image
     images = image_model.generate_images(

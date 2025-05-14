@@ -79,33 +79,6 @@ def format_thumbnail_url(content_details) -> str:
     logger.debug(f"Formatted storage thumbnail URL :: {image_url}")
     return image_url
 
-
-def download_thumbnail(thumbnail_url: str) -> bytes:
-    """Downloads the thumbnail image from the given URL.
-
-    Args:
-        thumbnail_url (str): The URL of the thumbnail image.
-
-    Returns:
-        bytes: The thumbnail image data.
-
-    Raises:
-        Exception: If there's an error downloading the thumbnail.
-    """
-
-    response = requests.get(thumbnail_url, stream=True)
-    response.raise_for_status()
-    image_type = response.headers["Content-Type"]
-    logger.info(f"Thumbnail  content type :: {image_type}")
-    # Check for image type, currently only PNG or JPEG format are supported
-    if image_type not in MIME_TO_EXTENSION:
-        raise ValueError(f"Image can only be in the following formats: {', '.join(MIME_TO_EXTENSION.keys())}")
-
-    # Read the image data as bytes
-    image_bytes = b''.join(response.iter_content(chunk_size=1024))
-    return image_bytes
-
-
 def download_content_thumbnail(content_id: str) -> str:
     """Downloads the thumbnail for a given content ID.
 
@@ -121,7 +94,6 @@ def download_content_thumbnail(content_id: str) -> str:
 
     content_details = fetch_content_details(content_id)
     thumbnail_url = format_thumbnail_url(content_details)
-    # thumbnail_data = download_thumbnail(thumbnail_url)
     return thumbnail_url
 
 def detect_logos(image_url: str, image_mimetype: str) -> str:
@@ -255,44 +227,6 @@ def generate_content(image_url: str, image_mimetype: str) -> str:
     logger.info(f"Uasage details for generate content :: {response.usage_metadata}")
     logger.info(f"Generated content :: {response.text}")
     return response.text
-
-
-def display_images_in_grid(images):
-    """Displays the provided images in a grid format. 4 images per row.
-
-    Args:
-        images: A list of PIL Image objects representing the images to display.
-    """
-
-    # Determine the number of rows and columns for the grid layout.
-    nrows = math.ceil(len(images) / 4)  # Display at most 4 images per row
-    # Adjust columns based on the number of images
-    ncols = min(len(images) + 1, 4)
-
-    # Create a figure and axes for the grid layout.
-    fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(12, 6))
-
-    for i, ax in enumerate(axes.flat):
-        if i < len(images):
-            # Display the image in the current axis.
-            ax.imshow(images[i]._pil_image)
-
-            # Adjust the axis aspect ratio to maintain image proportions.
-            ax.set_aspect("equal")
-
-            # Disable axis ticks for a cleaner appearance.
-            ax.set_xticks([])
-            ax.set_yticks([])
-        else:
-            # Hide empty subplots to avoid displaying blank axes.
-            ax.axis("off")
-
-    # Adjust the layout to minimize whitespace between subplots.
-    plt.tight_layout()
-
-    # Display the figure with the arranged images.
-    plt.show()
-
 
 def generate_image(image_prompt: str) -> ImageGenerationResponse:
 

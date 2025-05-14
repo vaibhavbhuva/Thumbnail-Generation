@@ -2,18 +2,24 @@ import os
 from typing import Union
 from urllib.parse import urlparse
 
-ASSET_PREFIX = "/assets/public/"
+# Constants
+ASSET_PREFIX: str = "/assets/public/"
 
-MIME_TO_EXTENSION = {
+# Mappings
+MIME_TO_EXTENSION: dict[str, str] = {
     "image/png": "png",
     "image/jpeg": "jpg"
 }
 
-_FORMAT_TO_MIME_TYPE = {
+EXTENSION_TO_MIME_TYPE: dict[str, str] = {
     "png": "image/png",
     "jpeg": "image/jpeg",
     "jpg": "image/jpeg"
 }
+
+# Default values
+DEFAULT_EXTENSION: str = "jpg"
+DEFAULT_MIME_TYPE: str = "image/jpeg"
 
 def format_storage_url(image_url: str, asset_prefix = ASSET_PREFIX) -> str:
     urlparts = urlparse(image_url)
@@ -23,23 +29,22 @@ def format_storage_url(image_url: str, asset_prefix = ASSET_PREFIX) -> str:
     return new_url
 
 def get_file_extension(file_path: str):
-  default_ext  = "jpg"
   try:
     parsed_url = urlparse(file_path)
     path = parsed_url.path
     if path:
       _, ext = os.path.splitext(path)
-      return ext.lower()
+      return ext.lower().lstrip(".") if ext else DEFAULT_EXTENSION
     else:
-      return default_ext
+      return DEFAULT_EXTENSION
   except Exception as e:
     print(f"get_file_extension :: Error parsing URL: {e}")
-    return default_ext
+    return DEFAULT_EXTENSION
 
 def get_file_mimetype(file_path):
   extension = get_file_extension(file_path)
-  return _FORMAT_TO_MIME_TYPE.get(extension, 'image/jpeg')
+  return EXTENSION_TO_MIME_TYPE.get(extension, DEFAULT_MIME_TYPE)
 
-def get_extension_from_mimetype(mime_type) -> Union[str, None]:
+def get_extension_from_mimetype(mime_type: str) -> Union[str, None]:
     # Use a dictionary to map mimetypes to extensions
-    return MIME_TO_EXTENSION.get(mime_type, "png")
+    return MIME_TO_EXTENSION.get(mime_type.lower(), "png")
